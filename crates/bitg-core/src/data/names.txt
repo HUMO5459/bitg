@@ -94,3 +94,6 @@ chase
 schwab
 mastercard
 cashapp
+shein
+bershka
+shiseido
