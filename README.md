@@ -301,6 +301,16 @@ bitg explain "Chat with the team, keyin choy"   # har bir so'z bo'yicha qaror
 bitg cyr "O'zbekiston shaharlari"               # lotindan kirillga: Ўзбекистон шаҳарлари
 ```
 
+O'rnatmasdan, Docker bilan (v0.3.2 dan; Linux, macOS, Windows; amd64 va arm64):
+
+```sh
+echo "O'zbekiston shaharlari" | docker run --rm -i ghcr.io/dtwinuz/bitg
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/dtwinuz/bitg file hujjat.docx
+```
+
+Image ichida faqat statik `bitg` binari bor. U relizdagi paketlar bilan bir xil yig'iladi va imzolanadi:
+`gh attestation verify oci://ghcr.io/dtwinuz/bitg:0.3.2 -R dtwinuz/bitg --signer-workflow dtwinuz/bitg/.github/workflows/build.yml`.
+
 ### Fayllar va oldindan ko'rish
 
 ```sh

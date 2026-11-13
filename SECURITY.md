@@ -63,6 +63,13 @@ gh attestation verify bitg-0.3.2-x64.msi -R dtwinuz/bitg \
 
 v0.3.1 uchun `--signer-workflow` qiymati `dtwinuz/bitg/.github/workflows/release.yml`.
 
+Docker image (`ghcr.io/dtwinuz/bitg`, v0.3.2 dan) ham shu workflow'da imzolanadi:
+
+```bash
+gh attestation verify oci://ghcr.io/dtwinuz/bitg:0.3.2 -R dtwinuz/bitg \
+  --signer-workflow dtwinuz/bitg/.github/workflows/build.yml --source-ref refs/tags/v0.3.2 --deny-self-hosted-runners
+```
+
 Internetsiz (GitHub API'siz) tekshirish uchun relizdagi bundle fayli:
 
 ```bash

@@ -63,8 +63,27 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
+          pattern: rel-*
           path: dist
           merge-multiple: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: oci
+          path: oci
+      # Image digest = OCI index blob'ining sha256, shuning uchun blob faylining o'zi tekshiriladi (registry kerak emas)
+      - name: gh attestation verify (OCI image)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+        run: |
+          mkdir -p oci/x && tar -xf oci/*-oci.tar -C oci/x
+          d=$(jq -r '.manifests[0].digest' oci/x/index.json)
+          echo "image digest: $d"
+          for p in https://slsa.dev/provenance/v1 https://spdx.dev/Document/v2.3; do
+            gh attestation verify "oci/x/blobs/sha256/${d#sha256:}" -R "$REPO" --predicate-type "$p" \
+              --signer-workflow "$REPO/.github/workflows/build.yml" --source-ref "$REF" --deny-self-hosted-runners
+          done
       - name: gh attestation verify (onlayn, bundle bilan, SBOM)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,6 +110,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
+          pattern: rel-*
           path: dist
           merge-multiple: true
       - name: Release
@@ -104,6 +124,36 @@ jobs:
           # MSI + sha256, 2 deb + 2 sha256, pkg + sha256, SBOM, provenance va SBOM bundle'lari
           [ "$n" -eq 11 ] || { ls -l; echo "reliz fayllari 11 ta bo'lishi kerak, bor: $n"; exit 1; }
           gh release create "$TAG" ./* -R "$REPO" --title "bitg ${TAG#v}" --generate-notes --verify-tag
+
+  image:
+    # Tekshirilgan OCI image'ni o'zgartirmasdan (digest saqlanadi) ghcr.io/dtwinuz/bitg ga yuboradi: <versiya> va latest
+    if: github.event_name == 'push'
+    needs: [meta, verify]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: read
+    env:
+      VERSION: ${{ needs.meta.outputs.version }}
+      IMAGE: ghcr.io/${{ github.repository_owner }}/bitg
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: oci
+          path: oci
+      - name: ghcr.io
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+        run: |
+          echo "$GH_TOKEN" | skopeo login ghcr.io -u "$ACTOR" --password-stdin
+          skopeo copy --all --preserve-digests "oci-archive:oci/bitg-$VERSION-oci.tar" "docker://$IMAGE:$VERSION"
+          skopeo copy --all --preserve-digests "docker://$IMAGE:$VERSION" "docker://$IMAGE:latest"
+          gh attestation verify "oci://$IMAGE:$VERSION" -R "$REPO" \
+            --signer-workflow "$REPO/.github/workflows/build.yml" --source-ref "$REF" --deny-self-hosted-runners
 
   announce:
     if: github.event_name == 'push'

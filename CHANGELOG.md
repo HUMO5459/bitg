@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versiyalar: [S
 
 ## [Unreleased]
 
+### Qo'shildi
+- **Docker image `ghcr.io/dtwinuz/bitg`** (amd64, arm64): faqat statik `bitg` binari, root'siz. Har relizda
+  `build.yml` yig'adi va imzolaydi (SLSA provenance + SBOM, reliz paketlari bilan bir xil imzolovchi). Image
+  takrorlanuvchan: CI uni ikki marta yig'ib digest'ini solishtiradi. `release.yml` image'ni attestation tekshiruvidan
+  keyin digest'ini o'zgartirmasdan `<versiya>` va `latest` teglari bilan yuboradi.
+
 ### Xavfsizlik
 - **SLSA Build L3:** reliz paketlarini reusable `build.yml` yig'adi va imzolaydi. Kod kompilyatsiya qiladigan
   job'larda imzo tokeni (`id-token`) yo'q, attestation'ni alohida `attest` job yozadi. `release.yml` relizni faqat

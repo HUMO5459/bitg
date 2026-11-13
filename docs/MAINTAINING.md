@@ -72,7 +72,9 @@ Reliz to'liq GitHub Actions'da yig'iladi, shaxsiy kompyuter kerak emas.
    - `build.yml` orqali `.deb` (IBus va Fcitx5), macOS `.pkg` va Windows MSI ni yig'adi;
    - SLSA provenance va SBOM attestation'ini yaratadi (imzolovchi `build.yml`, SLSA Build L3);
    - attestation'ni `gh attestation verify --signer-workflow` bilan tekshiradi, o'tmasa reliz ochilmaydi;
-   - GitHub Release'ni ochadi.
+   - GitHub Release'ni ochadi;
+   - Docker image'ni `ghcr.io/dtwinuz/bitg:<versiya>` va `:latest` ga yuboradi (digest o'zgarmaydi, yuborilgach
+     yana `gh attestation verify oci://...` bilan tekshiriladi).
 
    Reliz zanjirini teg qo'ymasdan sinash: Actions → release → Run workflow (versiya = `Cargo.toml` dagi). Hammasi
    yig'iladi va tekshiriladi, lekin reliz ochilmaydi.
